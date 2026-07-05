@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">ChatApp</string>
+    <string name="Welcome_Back">Welcome Back</string>
+    <string name="Email">Email\n</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In\n</string>
+    <string name="create_new_account">Create New Account\n</string>
+    <string name="Login_To_Continue">Login To Continue\n</string>
+    <string name="Create_new_Account">Create New Account\n</string>
+    <string name="add_image">Upload Image\n</string>
+    <string name="Name">Enter Your Name</string>
+    <string name="Confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign Up</string>
+
+
+    <string name="default_user_name">User Name</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_online">Online</string>
+    <string name="input_hint">Type a message</string>
+    <string name="status_last_seen">Last seen: %s</string>
+</resources>
