@@ -12,12 +12,12 @@ app.config['SECRET_KEY'] = 'my_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # --- DATABASE CONNECTION ---
-MONGO_URI = "mongodb+srv://Intership:rohan2004@cluster0.6rqtgnz.mongodb.net/"
+MONGO_URI = "" # Mongo DB URL
 client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db = client.chat_database
 
 print("\n" + "="*50)
-print("✅ MONGODB CONNECTED SUCCESSFULLY")
+print("MONGODB CONNECTED SUCCESSFULLY")
 db.users.update_many({}, {"$set": {"online": False, "sid": None}})
 print("🧹 Cleared leftover online sessions")
 print("="*50 + "\n")
@@ -56,7 +56,7 @@ def api_signup():
             "signedPreKeyPublic": None    
         }).inserted_id
         
-        print(f"🆕 NEW USER SIGNED UP: {phone}")
+        print(f" NEW USER SIGNED UP: {phone}")
         return jsonify({"status": True, "message": "User created", "userId": str(user_id), "name": name}), 201
     except Exception as e:
         return jsonify({"status": False, "message": "Internal Server Error"}), 500
@@ -72,7 +72,7 @@ def api_login():
         
         if user and check_password_hash(user['password'], password):
             db.users.update_one({"_id": user["_id"]}, {"$set": {"online": False, "sid": None}})
-            print(f"🔑 LOGIN SUCCESS: {phone}")
+            print(f" LOGIN SUCCESS: {phone}")
             return jsonify({
                 "status": True,
                 "userId": str(user["_id"]),
@@ -131,7 +131,7 @@ def get_messages():
         return jsonify([]), 500
 
 
-# --- 🔐 X3DH KEY REGISTRY ENDPOINTS ---
+# --- X3DH KEY REGISTRY ENDPOINTS ---
 
 @app.route("/keys/upload", methods=["POST"])
 def upload_keys():
@@ -152,7 +152,7 @@ def upload_keys():
                 "signedPreKeyPublic": signed_prekey_public
             }}
         )
-        print(f"\n📥 RECEIVED KEY UPLOAD FOR: {phone} (Keys securely hidden)")
+        print(f"\n RECEIVED KEY UPLOAD FOR: {phone} (Keys securely hidden)")
         return jsonify({"status": True, "message": "Keys uploaded successfully"}), 200
     except Exception as e:
         return jsonify({"status": False, "message": "Internal Server Error"}), 500
@@ -179,7 +179,7 @@ def get_keys():
 
 @socketio.on("connect")
 def handle_connect():
-    print(f"🔌 NEW CONNECTION: SID [{request.sid}]")
+    print(f" NEW CONNECTION: SID [{request.sid}]")
 
 @socketio.on("disconnect")
 def handle_disconnect():
@@ -187,7 +187,7 @@ def handle_disconnect():
     if user:
         phone = user["phone"]
         db.users.update_one({"_id": user["_id"]}, {"$set": {"online": False, "sid": None}})
-        print(f"\n🔴 USER DISCONNECTED: {phone}")
+        print(f"\n USER DISCONNECTED: {phone}")
         print("-" * 40)
 
 @socketio.on("register")
@@ -196,12 +196,12 @@ def handle_register(data):
     if phone:
         join_room(phone) 
         db.users.update_one({"phone": phone}, {"$set": {"online": True, "sid": request.sid}})
-        print(f"\n🟢 USER ONLINE: {phone}")
+        print(f"\n USER ONLINE: {phone}")
         
         # Delivery logic for missed E2EE messages
         pending_msgs = list(db.messages.find({"receiver": phone, "status": 1}))
         if pending_msgs:
-            print(f"   📦 Delivering {len(pending_msgs)} pending encrypted payloads...")
+            print(f"   Delivering {len(pending_msgs)} pending encrypted payloads...")
             for msg in pending_msgs:
                 # Forward everything exactly as it was stored
                 delivery_payload = {k: v for k, v in msg.items() if k not in ["_id", "timestamp"]}
@@ -225,7 +225,7 @@ def handle_message(data):
     db_payload["status"] = 1
     msg_id = db.messages.insert_one(db_payload).inserted_id
 
-    print(f"\n💬 ENCRYPTED TRANSACTION")
+    print(f"\n ENCRYPTED TRANSACTION")
     print(f"   FROM: {sender}")
     print(f"   TO:   {receiver}")
 
@@ -239,10 +239,10 @@ def handle_message(data):
         emit("receive_message", emit_payload, room=receiver)
         emit("message_status", {"status": 2}, room=sender)
         db.messages.update_one({"_id": msg_id}, {"$set": {"status": 2}})
-        print(f"   ✅ STATUS: Ciphertext Delivered (Online)")
+        print(f"  STATUS: Ciphertext Delivered (Online)")
     else:
         emit("message_status", {"status": 1}, room=sender)
-        print(f"   ☁️  STATUS: Ciphertext Queued in DB (Offline)")
+        print(f"   STATUS: Ciphertext Queued in DB (Offline)")
     
     print("-" * 40)
 
@@ -262,8 +262,8 @@ def handle_read(data):
 if __name__ == "__main__":
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
-    print(f"🚀 SERVER STARTING...")
-    print(f"🔗 LOCAL URL: http://{local_ip}:8080")
-    print(f"🔗 EXTERNAL:  http://0.0.0.0:8080")
+    print(f" SERVER STARTING...")
+    print(f" LOCAL URL: http://{local_ip}:8080")
+    print(f" EXTERNAL:  http://0.0.0.0:8080")
     print("="*50 + "\n")
     socketio.run(app, host="0.0.0.0", port=8080, debug=True, use_reloader=False)
